@@ -1,0 +1,3 @@
+# mixer
+
+`make test` 跑自检。
