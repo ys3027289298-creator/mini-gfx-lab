@@ -4,7 +4,7 @@ CFLAGS ?= -O2 -std=c11 -Wall -Wextra
 all: particle-pool
 
 particle-pool: src/particle.c
-	$(CC) $(CFLAGS) $< -o $@ -lm
+	$(CC) $(CFLAGS) $< -o $@ -lm -pthread
 
 test: particle-pool
 	./particle-pool
