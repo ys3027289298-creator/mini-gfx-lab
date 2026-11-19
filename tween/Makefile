@@ -1,13 +1,19 @@
 CC ?= gcc
 CFLAGS ?= -O2 -std=c11 -Wall -Wextra
 
-all: tween
+BINS = tween fsm
+
+all: $(BINS)
 
 tween: src/tween.c
 	$(CC) $(CFLAGS) $< -o $@ -lm
 
-test: tween
+fsm: src/fsm.c
+	$(CC) $(CFLAGS) $< -o $@ -lm
+
+test: $(BINS)
 	./tween
+	./fsm
 
 clean:
-	rm -f tween
+	rm -f $(BINS)
