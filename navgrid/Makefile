@@ -9,5 +9,10 @@ mini-navgrid: src/navgrid.c
 test: mini-navgrid
 	./mini-navgrid
 
+bench: mini-navgrid
+	./mini-navgrid --bench
+
 clean:
 	rm -f mini-navgrid
+
+.PHONY: all test bench clean
