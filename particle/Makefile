@@ -1,13 +1,19 @@
 CC ?= gcc
 CFLAGS ?= -O2 -std=c11 -Wall -Wextra
 
-all: particle-pool
+BINS = particle-pool trail-history
+
+all: $(BINS)
 
 particle-pool: src/particle.c
 	$(CC) $(CFLAGS) $< -o $@ -lm
 
-test: particle-pool
+trail-history: src/trail.c
+	$(CC) $(CFLAGS) $< -o $@ -lm
+
+test: $(BINS)
 	./particle-pool
+	./trail-history
 
 clean:
-	rm -f particle-pool
+	rm -f $(BINS)
