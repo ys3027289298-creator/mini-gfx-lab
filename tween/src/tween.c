@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include "simenv/simenv.h"
 
 #define MAX_KEYS 32
 
@@ -114,6 +115,24 @@ int main(void) {
     tl_init(&bad, 1.0f, 0);
     check("reject_unsorted", (tl_add(&bad, 0.5f, 1.0f, EASE_LINEAR), tl_add(&bad, 0.2f, 2.0f, EASE_LINEAR)) == -1);
     check("reject_out_of_range", tl_add(&bad, 2.0f, 3.0f, EASE_LINEAR) == -1);
+
+    /* time source comes from the injected clock, not a hard-coded value:
+       drive a looped timeline frame by frame and snapshot its samples */
+    static const double dts[5] = { 0.1, 0.2, 0.3, 0.25, 0.15 };
+    SimEnv env = { sim_clock_scripted(dts, 5), sim_rng_pcg32(1234ull) };
+    Timeline drv;
+    tl_init(&drv, 1.0f, 1);
+    tl_add(&drv, 0.0f, 0.0f, EASE_LINEAR);
+    tl_add(&drv, 1.0f, 10.0f, EASE_LINEAR);
+    float samples[5];
+    for (int f = 0; f < 5; f++) {
+        sim_env_dt(&env);                          /* advance the clock */
+        samples[f] = tl_eval(&drv, (float)sim_env_now(&env));
+    }
+    /* cumulative time is 1.0 -> wraps to 0; deterministic mid value check */
+    check("clock_driven_mid", fabsf(samples[1] - 3.0f) < 1e-4f);
+    check("clock_driven_wrap", fabsf(samples[4] - 0.0f) < 1e-4f);
+    check("clock_driven_monotonic", samples[0] < samples[1] && samples[1] < samples[2]);
 
     printf("all_ok=%d\n", failures == 0);
     return failures == 0 ? 0 : 1;

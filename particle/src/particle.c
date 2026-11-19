@@ -1,8 +1,12 @@
 
 /* particle-pool: fixed-capacity particle pool with per-frame spawn budget
-   and emitter priority scheduling. */
+   and emitter priority scheduling. Time and randomness come exclusively from
+   the injected SimEnv (see simenv): dt from the clock source, spread/life
+   jitter from the random source. */
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
+#include "simenv/simenv.h"
 
 #define MAX_PARTICLES 4096
 #define MAX_EMITTERS 8
@@ -34,14 +38,22 @@ static int pool_find_free(World* w) {
     return -1;
 }
 
-static int spawn_one(World* w, int emitter_id) {
+static int spawn_one(World* w, int emitter_id, SimEnv* env) {
     int idx = pool_find_free(w);
     if (idx < 0) return -1;
     Particle* p = &w->pool[idx];
     p->alive = 1; p->age = 0.0f;
     p->x = 0.0f; p->y = 0.0f;
-    p->vx = 1.0f; p->vy = 0.5f;
-    p->life = 2.0f;
+    /* random spread from the injected source: one batch call supplies the
+       angle, speed and life jitter draws (same order/values as three scalar
+       draws, but a single interface dispatch) */
+    float r[3];
+    sim_env_randf_n(env, r, 3);
+    float angle = r[0] * 6.2831853f;
+    float speed = 0.5f + r[1];
+    p->vx = cosf(angle) * speed;
+    p->vy = sinf(angle) * speed;
+    p->life = 2.0f + 0.25f * (r[2] - 0.5f);
     p->tag = emitter_id;
     w->alive_count++;
     if (w->alive_count > w->high_water) w->high_water = w->alive_count;
@@ -49,7 +61,7 @@ static int spawn_one(World* w, int emitter_id) {
 }
 
 /* highest priority emitters spend their quota first */
-static void spawn_frame(World* w, int budget) {
+static void spawn_frame(World* w, int budget, SimEnv* env) {
     int left = budget;
     int order[MAX_EMITTERS]; int n = w->emitter_count;
     for (int i = 0; i < n; i++) order[i] = i;
@@ -62,7 +74,7 @@ static void spawn_frame(World* w, int budget) {
         Emitter* e = &w->emitters[order[k]];
         e->spawned = 0;
         int want = e->quota < left ? e->quota : left;
-        for (int i = 0; i < want; i++) if (spawn_one(w, e->id) >= 0) { e->spawned++; left--; }
+        for (int i = 0; i < want; i++) if (spawn_one(w, e->id, env) >= 0) { e->spawned++; left--; }
     }
 }
 
@@ -77,13 +89,19 @@ static void update(World* w, float dt) {
 }
 
 int main(void) {
+    /* scripted clock + fixed-seed RNG: this run is fully reproducible */
+    static const double frame_dts[10] =
+        { 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1 };
+    SimEnv env = { sim_clock_scripted(frame_dts, 10), sim_rng_pcg32(0xC0FFEEull) };
+
     World w; world_init(&w);
     emitter_add(&w, 1, 40, 2);
     emitter_add(&w, 2, 30, 9);
     emitter_add(&w, 3, 20, 5);
     for (int frame = 0; frame < 10; frame++) {
-        spawn_frame(&w, 50);
-        update(&w, 0.1f);
+        float dt = (float)sim_env_dt(&env);   /* time from the injected clock */
+        spawn_frame(&w, 50, &env);
+        update(&w, dt);
     }
     printf("alive=%d high_water=%d\n", w.alive_count, w.high_water);
     int tag1 = 0, tag2 = 0, tag3 = 0;
