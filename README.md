@@ -7,7 +7,7 @@
 | `navgrid/` | 8 方向 A*、禁止切角、视线平滑、增量重规划实验台 |
 | `spatial/` | 双耳定位 ITD/IID、距离衰减、软限幅混音 |
 | `particle/` | 固定容量粒子池、每帧配额、发射器优先级 |
-| `lod/` | 屏幕误差 LOD 选择与迟滞 |
+| `lod/` | 屏幕误差 LOD 选择与迟滞、穷举最优对照验证 |
 
 ```bash
 for d in */; do (cd "$d" && make test); done

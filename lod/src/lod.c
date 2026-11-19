@@ -8,6 +8,7 @@
 
 typedef struct {
     float error[LEVELS];   /* geometric error per level, world units */
+    float cost[LEVELS];    /* render cost per level, e.g. triangle count */
     float radius;          /* bounding radius */
     float tau;             /* hysteresis ratio, e.g. 1.1 */
 } MeshLod;
@@ -23,11 +24,15 @@ static float screen_error(float geom_error, float distance, float fov_y, int scr
     return geom_error * (float)screen_h / (2.0f * distance * tanf(fov_y * 0.5f));
 }
 
+/* 选级操作计数：lod-verify 用它检查单帧选级是线性时间，热路径只多一次自增 */
+long lod_select_ops = 0;
+
 /* pick coarsest level whose projected error is below tolerance */
 static int select_level(const MeshLod* m, float distance, float fov_y, int screen_h,
                         float tolerance_px, State* st) {
     int want = 0;
     for (int i = LEVELS - 1; i >= 0; i--) {
+        lod_select_ops++;
         float e = screen_error(m->error[i], distance, fov_y, screen_h);
         if (e <= tolerance_px) { want = i; break; }
     }
@@ -36,16 +41,17 @@ static int select_level(const MeshLod* m, float distance, float fov_y, int scree
         /* hysteresis: require the candidate to beat the threshold by tau */
         float e_new = screen_error(m->error[want], distance, fov_y, screen_h);
         float e_old = screen_error(m->error[prev], distance, fov_y, screen_h);
-        if (want > prev && e_new > tolerance_px * m->tau) return prev;
-        if (want < prev && e_old < tolerance_px / m->tau) return prev;
+        if (want > prev && e_new > tolerance_px / m->tau) return prev;
+        if (want < prev && e_old < tolerance_px * m->tau) return prev;
         st->switches++;
         st->level = want;
     }
     return st->level;
 }
 
+#ifndef LOD_LIB
 int main(void) {
-    MeshLod m = { {0.0f, 1.0f, 4.0f, 16.0f}, 2.0f, 1.1f };
+    MeshLod m = { {0.0f, 1.0f, 4.0f, 16.0f}, {1000.0f, 300.0f, 80.0f, 20.0f}, 2.0f, 1.1f };
     State st = {0, 0, 0};
     float fov = 1.0f; int h = 1080;
     int hist[LEVELS] = {0};
@@ -59,3 +65,4 @@ int main(void) {
     printf("hysteresis_ok=%d\n", st.switches <= 8);
     return 0;
 }
+#endif /* LOD_LIB */
