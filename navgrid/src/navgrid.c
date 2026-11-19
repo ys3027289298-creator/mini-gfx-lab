@@ -6,6 +6,8 @@
 #include <string.h>
 #include <math.h>
 
+#include "gridhash.h"
+
 #define MAX_W 64
 #define MAX_H 64
 #define MAX_NODES (MAX_W * MAX_H)
@@ -150,6 +152,12 @@ int main(void) {
     };
     Grid g;
     if (grid_load(&g, rows, 5) != 0) { printf("load fail\n"); return 1; }
+    /* 联机校验用内容哈希：blocked 行 stride 为 MAX_W（带 padding），
+       哈希只取决于逻辑格子，与布局无关。 */
+    char map_hash[17];
+    gh_to_hex(gh_hash_full_strided((uint32_t)g.w, (uint32_t)g.h,
+                                   &g.blocked[0][0], MAX_W), map_hash);
+    printf("map_hash=%s\n", map_hash);
     Pt s = {0,0}, t = {8,4};
     Pt raw[MAX_NODES], sm[MAX_NODES];
     int n = astar(&g, s, t, raw, MAX_NODES);
