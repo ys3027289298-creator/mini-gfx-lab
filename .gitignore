@@ -1,0 +1,6 @@
+# build outputs
+lod/lod-selector
+lod/bbox-check
+navgrid/mini-navgrid
+particle/particle-pool
+spatial/mini-spatial
