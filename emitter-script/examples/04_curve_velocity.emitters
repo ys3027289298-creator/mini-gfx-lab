@@ -1,0 +1,14 @@
+# 速度曲线：二次缓入让粒子逐渐加速，一个周期 1 秒。
+pool   256
+budget 100
+ticks  8
+dt     0.125
+
+curve drift(-2, 2, quad_in)
+
+emitter wind priority 2 {
+  quota 2
+  pos   0, 0
+  vel   @drift, 0
+  life  10
+}

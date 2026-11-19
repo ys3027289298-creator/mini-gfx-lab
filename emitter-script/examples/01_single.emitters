@@ -1,0 +1,12 @@
+# 最简单的发射器：恒定配额、恒定速度。
+pool   128
+budget 10
+ticks  5
+dt     0.1
+
+emitter smoke priority 1 {
+  quota 2
+  pos   0, 0
+  vel   1, 0.5
+  life  20
+}

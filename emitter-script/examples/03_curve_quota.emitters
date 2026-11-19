@@ -1,0 +1,14 @@
+# 配额曲线：线性上升，每 1 秒一个周期。
+pool   256
+budget 100
+ticks  4
+dt     0.25
+
+curve ramp(0, 4, linear)
+
+emitter drizzle priority 0 {
+  quota @ramp
+  pos   0, 0
+  vel   0.25, 0
+  life  10
+}

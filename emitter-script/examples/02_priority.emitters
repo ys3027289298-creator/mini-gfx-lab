@@ -1,0 +1,27 @@
+# 与 particle/src/particle.c 相同的三发射器优先级场景。
+# 预算 50 被高优先级拿走后，剩余名额依次下放。
+pool   4096
+budget 50
+ticks  20
+dt     0.1
+
+emitter spark priority 1 {
+  quota 40
+  pos   0, 0
+  vel   1, 0.5
+  life  0.5
+}
+
+emitter jet priority 9 {
+  quota 30
+  pos   0, 0
+  vel   1, 0.5
+  life  0.5
+}
+
+emitter haze priority 5 {
+  quota 20
+  pos   0, 0
+  vel   1, 0.5
+  life  0.5
+}

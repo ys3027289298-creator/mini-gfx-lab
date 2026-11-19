@@ -1,0 +1,14 @@
+# cubic_io 位置曲线：横向从 -5 扫到 5，一个周期 1 秒。
+pool   256
+budget 100
+ticks  8
+dt     0.125
+
+curve sweep(-5, 5, cubic_io)
+
+emitter sweep priority 0 {
+  quota 1
+  pos   @sweep, 0
+  vel   0, 0
+  life  10
+}

@@ -1,0 +1,14 @@
+# 寿命曲线：后发射的粒子寿命更短，寿命在头 1 秒内从 4 降到 1。
+pool   256
+budget 100
+ticks  8
+dt     0.125
+
+curve fade(4, 1, linear)
+
+emitter ember priority 0 {
+  quota 2
+  pos   0, 0
+  vel   0, 1
+  life  @fade
+}

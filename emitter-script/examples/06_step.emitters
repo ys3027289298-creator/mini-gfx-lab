@@ -1,0 +1,14 @@
+# step 曲线：t < 1 时取起点，之后取终点，用于“闸门”式配额。
+pool   256
+budget 100
+ticks  6
+dt     0.5
+
+curve gate(0, 3, step)
+
+emitter burst priority 4 {
+  quota @gate
+  pos   0, 0
+  vel   0, 0
+  life  10
+}

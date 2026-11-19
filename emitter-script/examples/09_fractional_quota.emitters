@@ -1,0 +1,12 @@
+# 小数配额按 tick 进位：0.25/tick 表示每 4 个 tick 发射 1 个。
+pool   64
+budget 10
+ticks  8
+dt     1.0
+
+emitter mist priority 0 {
+  quota 0.25
+  pos   0, 0
+  vel   0, 0
+  life  100
+}

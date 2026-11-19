@@ -1,0 +1,19 @@
+# 池容量限制：寿命足够长，第一帧后池就满了。
+pool   10
+budget 100
+ticks  5
+dt     0.1
+
+emitter greedy priority 5 {
+  quota 8
+  pos   0, 0
+  vel   0, 0
+  life  100
+}
+
+emitter trickle priority 1 {
+  quota 5
+  pos   1, 1
+  vel   0, 0
+  life  100
+}
