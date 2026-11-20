@@ -1,13 +1,21 @@
 CC ?= gcc
 CFLAGS ?= -O2 -std=c11 -Wall -Wextra
+SRC := src/pf_grid.c src/pf_heap.c src/pf_astar.c src/pf_lpa.c src/pf_hpa.c \
+       src/pf_solver.c src/test_pf.c
+BIN := test-pf
 
-all: mini-navgrid
+all: $(BIN)
 
-mini-navgrid: src/navgrid.c
-	$(CC) $(CFLAGS) $< -o $@ -lm
+$(BIN): $(SRC) src/pf.h src/pf_internal.h
+	$(CC) $(CFLAGS) $(SRC) -o $@ -lm
 
-test: mini-navgrid
-	./mini-navgrid
+bench: $(BIN)
+	./$(BIN) bench
+
+test: $(BIN)
+	./$(BIN)
 
 clean:
-	rm -f mini-navgrid
+	rm -f $(BIN)
+
+.PHONY: all test bench clean
