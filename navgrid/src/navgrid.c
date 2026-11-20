@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "renderdiag.h"
 
 #define MAX_W 64
 #define MAX_H 64
@@ -16,10 +17,16 @@ typedef struct { int x, y; } Pt;
 
 static int grid_load(Grid* g, const char* const* rows, int h) {
     int w = (int)strlen(rows[0]);
-    if (w <= 0 || w > MAX_W || h <= 0 || h > MAX_H) return -1;
+    if (w <= 0 || w > MAX_W || h <= 0 || h > MAX_H) {
+        RD_REPORT(RD_NAVGRID_LOAD_BOUNDS);
+        return -1;
+    }
     g->w = w; g->h = h;
     for (int y = 0; y < h; y++) {
-        if ((int)strlen(rows[y]) != w) return -1;
+        if ((int)strlen(rows[y]) != w) {
+            RD_REPORT(RD_NAVGRID_LOAD_RAGGED);
+            return -1;
+        }
         for (int x = 0; x < w; x++) g->blocked[y][x] = (rows[y][x] == '#');
     }
     return 0;
@@ -48,10 +55,14 @@ static const int DIRS[8][2] = {{1,0},{-1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,1},{-1
 typedef struct { double g, f; int parent; unsigned char open, closed; } Node;
 
 static int astar(const Grid* g, Pt s, Pt t, Pt* out, int max_out) {
-    if (!walkable(g, s.x, s.y) || !walkable(g, t.x, t.y)) return -1;
+    if (!walkable(g, s.x, s.y) || !walkable(g, t.x, t.y)) {
+        RD_REPORT(RD_NAVGRID_ENDPOINT_BLOCKED);
+        return -1;
+    }
     Node* nodes = (Node*)calloc((size_t)g->w * g->h, sizeof(Node));
-    if (!nodes) return -1;
+    if (!nodes) { RD_REPORT(RD_NAVGRID_ALLOC); return -1; }
     int* heap = (int*)malloc(sizeof(int) * (size_t)g->w * g->h);
+    if (!heap) { RD_REPORT(RD_NAVGRID_ALLOC); free(nodes); return -1; }
     int hn = 0;
     int si = s.y * g->w + s.x, ti = t.y * g->w + t.x;
     nodes[si].g = 0.0;
@@ -95,10 +106,10 @@ static int astar(const Grid* g, Pt s, Pt t, Pt* out, int max_out) {
                 cur = nodes[cur].parent;
             }
             rc = n;
-        }
-    }
+        } else RD_REPORT(RD_NAVGRID_PATH_TOO_LONG);
+    } else RD_REPORT(RD_NAVGRID_NO_PATH);
     free(heap); free(nodes);
-    return rc;
+    return rc;   /* rd-waive: NO_PATH / PATH_TOO_LONG 已在上方分支上报 */
 }
 
 static int line_of_sight(const Grid* g, Pt a, Pt b) {
@@ -127,7 +138,7 @@ static int smooth(const Grid* g, const Pt* in, int n, Pt* out, int max_out) {
         for (int j = n - 1; j > anchor; j--) {
             if (line_of_sight(g, in[anchor], in[j])) { next = j; break; }
         }
-        if (m >= max_out) return -1;
+        if (m >= max_out) { RD_REPORT(RD_NAVGRID_SMOOTH_OVERFLOW); return -1; }
         out[m++] = in[next];
         anchor = next;
     }
@@ -149,11 +160,11 @@ int main(void) {
         ".....#..G.",
     };
     Grid g;
-    if (grid_load(&g, rows, 5) != 0) { printf("load fail\n"); return 1; }
+    if (grid_load(&g, rows, 5) != 0) { printf("load fail\n"); return 1; }   /* rd-waive: grid_load 已上报具体码 */
     Pt s = {0,0}, t = {8,4};
     Pt raw[MAX_NODES], sm[MAX_NODES];
     int n = astar(&g, s, t, raw, MAX_NODES);
-    if (n < 0) { printf("no path\n"); return 1; }
+    if (n < 0) { printf("no path\n"); return 1; }   /* rd-waive: astar 已上报具体码 */
     int m = smooth(&g, raw, n, sm, MAX_NODES);
     printf("raw=%d len=%.4f smooth=%d len=%.4f\n", n, path_length(raw,n), m, path_length(sm,m));
     for (int i = 0; i < m; i++) printf("(%d,%d)%s", sm[i].x, sm[i].y, i+1==m ? "\n" : " ");

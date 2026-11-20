@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "renderdiag.h"
 
 #define SR 48000
 #define MAX_FRAMES 4096
@@ -57,8 +58,18 @@ static float soft_clip(float v) {
     return sign * (k + (1.0f - k) * tanhf((a - k) / (1.0f - k)));
 }
 
-static void render(const Source* srcs, int n, const Listener* l,
-                   const float* mono, int frames, float* out /* interleaved */) {
+/* 返回 RD_OK 表示已渲染; 返回错误码时 out 未被写入,
+   调用方应跳过声学混音, 本帧用其余模块继续 (降级而不是整帧丢)。 */
+static int render(const Source* srcs, int n, const Listener* l,
+                  const float* mono, int frames, float* out /* interleaved */) {
+    if (frames <= 0 || frames > MAX_FRAMES) {
+        RD_REPORT(RD_SPATIAL_BAD_FRAMES);
+        return RD_SPATIAL_BAD_FRAMES;
+    }
+    if (n < 0 || n > MAX_SRC) {
+        RD_REPORT(RD_SPATIAL_TOO_MANY_SOURCES);
+        return RD_SPATIAL_TOO_MANY_SOURCES;
+    }
     memset(out, 0, sizeof(float) * (size_t)frames * 2);
     for (int k = 0; k < n; k++) {
         float az = azimuth_of(&srcs[k], l);
@@ -73,6 +84,7 @@ static void render(const Source* srcs, int n, const Listener* l,
         }
     }
     for (int i = 0; i < frames * 2; i++) out[i] = soft_clip(out[i]);
+    return RD_OK;
 }
 
 static float peak(const float* buf, int n) {

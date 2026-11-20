@@ -3,6 +3,7 @@
    and emitter priority scheduling. */
 #include <stdio.h>
 #include <string.h>
+#include "renderdiag.h"
 
 #define MAX_PARTICLES 4096
 #define MAX_EMITTERS 8
@@ -23,7 +24,10 @@ static void world_init(World* w) {
 }
 
 static int emitter_add(World* w, int id, int quota, int priority) {
-    if (w->emitter_count >= MAX_EMITTERS) return -1;
+    if (w->emitter_count >= MAX_EMITTERS) {
+        RD_REPORT(RD_PARTICLE_EMITTER_FULL);   /* 丢弃新发射器, 帧继续 */
+        return -1;
+    }
     Emitter* e = &w->emitters[w->emitter_count++];
     e->id = id; e->quota = quota; e->spawned = 0; e->priority = priority;
     return e->id;
@@ -31,12 +35,13 @@ static int emitter_add(World* w, int id, int quota, int priority) {
 
 static int pool_find_free(World* w) {
     for (int i = 0; i < MAX_PARTICLES; i++) if (!w->pool[i].alive) return i;
+    RD_REPORT(RD_PARTICLE_POOL_FULL);   /* 池满: 本帧不再产出, 帧继续 */
     return -1;
 }
 
 static int spawn_one(World* w, int emitter_id) {
     int idx = pool_find_free(w);
-    if (idx < 0) return -1;
+    if (idx < 0) return -1;   /* rd-waive: pool_find_free 已上报 POOL_FULL */
     Particle* p = &w->pool[idx];
     p->alive = 1; p->age = 0.0f;
     p->x = 0.0f; p->y = 0.0f;

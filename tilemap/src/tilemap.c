@@ -2,6 +2,7 @@
 /* tilemap: layered tile map with 4-neighbour autotiling and per-layer culling. */
 #include <stdio.h>
 #include <string.h>
+#include "renderdiag.h"
 
 #define W 32
 #define H 32
@@ -18,12 +19,15 @@ static void map_init(TileMap* m) {
 }
 
 static void map_set(TileMap* m, int layer, int x, int y, unsigned char id) {
-    if (layer < 0 || layer >= LAYERS || x < 0 || x >= W || y < 0 || y >= H) return;
+    if (layer < 0 || layer >= LAYERS || x < 0 || x >= W || y < 0 || y >= H) {
+        RD_REPORT(RD_TILEMAP_SET_OUT_OF_RANGE);   /* 丢弃越界写, 帧继续 */
+        return;
+    }
     m->base[layer][y][x] = id;
 }
 
 static unsigned char map_get(const TileMap* m, int layer, int x, int y) {
-    if (layer < 0 || layer >= LAYERS || x < 0 || x >= W || y < 0 || y >= H) return 0;
+    if (layer < 0 || layer >= LAYERS || x < 0 || x >= W || y < 0 || y >= H) return 0;   /* rd-waive: 越界读=空瓦片, 自动拼接边缘的正常语义 */
     return m->base[layer][y][x];
 }
 
@@ -39,7 +43,7 @@ static int autotile_mask(const TileMap* m, int layer, int x, int y) {
 
 /* autotile variant id for a filled cell: mask plus a base offset */
 static int autotile_variant(const TileMap* m, int layer, int x, int y) {
-    if (!map_get(m, layer, x, y)) return -1;
+    if (!map_get(m, layer, x, y)) return -1;   /* rd-waive: 空瓦片无变体, 非错误 */
     return autotile_mask(m, layer, x, y);
 }
 
