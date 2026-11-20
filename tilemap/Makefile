@@ -9,5 +9,10 @@ tilemap: src/tilemap.c
 test: tilemap
 	./tilemap
 
+check: tilemap
+	python3 -I check_tilemap.py
+
 clean:
 	rm -f tilemap
+
+.PHONY: all test check clean
