@@ -8,6 +8,7 @@ particle-pool: src/particle.c
 
 test: particle-pool
 	./particle-pool
+	./particle-pool desync-selftest
 
 clean:
 	rm -f particle-pool
