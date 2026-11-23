@@ -1,0 +1,48 @@
+# tilemap decode time (us); cache_on frame 0 is the only real decode
+decode_time: module=tilemap mode=cache_on frame kind us
+decode_time: frame=0 kind=miss us=94
+decode_time: frame=1 kind=hit us=19
+decode_time: frame=2 kind=hit us=19
+decode_time: frame=3 kind=hit us=20
+decode_time: module=tilemap mode=cache_off frame kind us
+decode_time: frame=0 kind=decode us=77
+decode_time: frame=1 kind=decode us=79
+decode_time: frame=2 kind=decode us=89
+decode_time: frame=3 kind=decode us=84
+
+# fontatlas decode time (us); cache_on frame 0 is the only real decode
+decode_time: module=fontatlas mode=cache_on frame kind us
+decode_time: frame=0 kind=miss us=85
+decode_time: frame=1 kind=hit us=14
+decode_time: frame=2 kind=hit us=15
+decode_time: frame=3 kind=hit us=14
+decode_time: module=fontatlas mode=cache_off frame kind us
+decode_time: frame=0 kind=decode us=85
+decode_time: frame=1 kind=decode us=75
+decode_time: frame=2 kind=decode us=65
+decode_time: frame=3 kind=decode us=62
+
+# particle decode time (us); cache_on frame 0 is the only real decode
+decode_time: module=particle mode=cache_on frame kind us
+decode_time: frame=0 kind=miss us=69
+decode_time: frame=1 kind=hit us=13
+decode_time: frame=2 kind=hit us=14
+decode_time: frame=3 kind=hit us=13
+decode_time: module=particle mode=cache_off frame kind us
+decode_time: frame=0 kind=decode us=83
+decode_time: frame=1 kind=decode us=62
+decode_time: frame=2 kind=decode us=57
+decode_time: frame=3 kind=decode us=55
+
+# lod decode time (us); cache_on frame 0 is the only real decode
+decode_time: module=lod mode=cache_on frame kind us
+decode_time: frame=0 kind=miss us=85
+decode_time: frame=1 kind=hit us=15
+decode_time: frame=2 kind=hit us=13
+decode_time: frame=3 kind=hit us=13
+decode_time: module=lod mode=cache_off frame kind us
+decode_time: frame=0 kind=decode us=75
+decode_time: frame=1 kind=decode us=72
+decode_time: frame=2 kind=decode us=65
+decode_time: frame=3 kind=decode us=65
+

@@ -9,5 +9,11 @@ fontatlas: src/fontatlas.c
 test: fontatlas
 	./fontatlas
 
+decpipe: src/decpipe.c ../decodecache/src/dc_codec.c ../decodecache/src/dc_codec.h
+	$(CC) $(CFLAGS) -I../decodecache/src src/decpipe.c ../decodecache/src/dc_codec.c -o $@ -lm
+
+bench: decpipe
+	./decpipe
+
 clean:
-	rm -f fontatlas
+	rm -f fontatlas decpipe

@@ -1,0 +1,40 @@
+# tilemap cache events (decodes must stay 1 after the first hit)
+hitlog: cache_miss id=1885667171979196296 decode_us=76 decodes=1
+hitlog: cache_hit id=1885667171979196296 decodes=1 hits=1 misses=1
+hitlog: cache_hit id=1885667171979196296 decodes=1 hits=2 misses=1
+hitlog: cache_hit id=1885667171979196296 decodes=1 hits=3 misses=1
+hitlog: cache_off id=1885667171979196296 decode_us=63 decodes=1
+hitlog: cache_off id=1885667171979196296 decode_us=64 decodes=2
+hitlog: cache_off id=1885667171979196296 decode_us=59 decodes=3
+hitlog: cache_off id=1885667171979196296 decode_us=70 decodes=4
+
+# fontatlas cache events (decodes must stay 1 after the first hit)
+hitlog: cache_miss id=3115450110225909913 decode_us=70 decodes=1
+hitlog: cache_hit id=3115450110225909913 decodes=1 hits=1 misses=1
+hitlog: cache_hit id=3115450110225909913 decodes=1 hits=2 misses=1
+hitlog: cache_hit id=3115450110225909913 decodes=1 hits=3 misses=1
+hitlog: cache_off id=3115450110225909913 decode_us=70 decodes=1
+hitlog: cache_off id=3115450110225909913 decode_us=62 decodes=2
+hitlog: cache_off id=3115450110225909913 decode_us=52 decodes=3
+hitlog: cache_off id=3115450110225909913 decode_us=49 decodes=4
+
+# particle cache events (decodes must stay 1 after the first hit)
+hitlog: cache_miss id=4345233048322218410 decode_us=55 decodes=1
+hitlog: cache_hit id=4345233048322218410 decodes=1 hits=1 misses=1
+hitlog: cache_hit id=4345233048322218410 decodes=1 hits=2 misses=1
+hitlog: cache_hit id=4345233048322218410 decodes=1 hits=3 misses=1
+hitlog: cache_off id=4345233048322218410 decode_us=69 decodes=1
+hitlog: cache_off id=4345233048322218410 decode_us=48 decodes=2
+hitlog: cache_off id=4345233048322218410 decode_us=44 decodes=3
+hitlog: cache_off id=4345233048322218410 decode_us=42 decodes=4
+
+# lod cache events (decodes must stay 1 after the first hit)
+hitlog: cache_miss id=5575015947914816187 decode_us=69 decodes=1
+hitlog: cache_hit id=5575015947914816187 decodes=1 hits=1 misses=1
+hitlog: cache_hit id=5575015947914816187 decodes=1 hits=2 misses=1
+hitlog: cache_hit id=5575015947914816187 decodes=1 hits=3 misses=1
+hitlog: cache_off id=5575015947914816187 decode_us=62 decodes=1
+hitlog: cache_off id=5575015947914816187 decode_us=59 decodes=2
+hitlog: cache_off id=5575015947914816187 decode_us=52 decodes=3
+hitlog: cache_off id=5575015947914816187 decode_us=51 decodes=4
+

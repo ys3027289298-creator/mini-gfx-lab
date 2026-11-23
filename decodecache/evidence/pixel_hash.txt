@@ -1,0 +1,16 @@
+# tilemap FNV-1a pixel hashes
+pixel_hash: input=d3820b7851f6b3cd output_on=436280b0c440e0e4 output_off=436280b0c440e0e4
+counts: cache_on decodes=1 hits=3 | cache_off decodes=4 hits=0
+
+# fontatlas FNV-1a pixel hashes
+pixel_hash: input=f761a7ccd76f9728 output_on=b4aef6828dd75e70 output_off=b4aef6828dd75e70
+counts: cache_on decodes=1 hits=3 | cache_off decodes=4 hits=0
+
+# particle FNV-1a pixel hashes
+pixel_hash: input=8c08a9a63d82475c output_on=ce2d38f64d761be9 output_off=ce2d38f64d761be9
+counts: cache_on decodes=1 hits=3 | cache_off decodes=4 hits=0
+
+# lod FNV-1a pixel hashes
+pixel_hash: input=bee45942fc585e74 output_on=5df0c20c502cafdd output_off=5df0c20c502cafdd
+counts: cache_on decodes=1 hits=3 | cache_off decodes=4 hits=0
+

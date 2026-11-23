@@ -1,0 +1,5 @@
+repro=make -C tilemap bench
+repro=make -C fontatlas bench
+repro=make -C particle bench
+repro=make -C lod bench
+make evidence   # collect + verify all four evidence kinds

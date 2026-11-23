@@ -9,5 +9,11 @@ tilemap: src/tilemap.c
 test: tilemap
 	./tilemap
 
+decpipe: src/decpipe.c ../decodecache/src/dc_codec.c ../decodecache/src/dc_codec.h
+	$(CC) $(CFLAGS) -I../decodecache/src src/decpipe.c ../decodecache/src/dc_codec.c -o $@ -lm
+
+bench: decpipe
+	./decpipe
+
 clean:
-	rm -f tilemap
+	rm -f tilemap decpipe

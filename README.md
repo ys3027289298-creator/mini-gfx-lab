@@ -12,3 +12,8 @@
 | `mixer/` | 总线混音、侧链闪避、软限幅 |
 | `fontatlas/` | 字形货架装箱与字距调整 |
 | `tween/` | 关键帧时间线与缓动 |
+| `decodecache/` | DCI1 图像编解码与解码缓存：同图多处只解码一次、命中零再解码 |
+
+`decodecache` 已接入 `tilemap`、`fontatlas`、`particle`、`lod` 四处解码管线；
+根目录 `make bench` 汇总四处的解码次数、命中、耗时与逐像素一致性，缺任一处即失败；
+`make evidence` 收集并硬校验四样证据（解码耗时表、缓存命中日志、像素哈希、复现命令）。

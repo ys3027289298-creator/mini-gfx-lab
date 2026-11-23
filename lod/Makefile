@@ -9,5 +9,11 @@ lod-selector: src/lod.c
 test: lod-selector
 	./lod-selector
 
+decpipe: src/decpipe.c ../decodecache/src/dc_codec.c ../decodecache/src/dc_codec.h
+	$(CC) $(CFLAGS) -I../decodecache/src src/decpipe.c ../decodecache/src/dc_codec.c -o $@ -lm
+
+bench: decpipe
+	./decpipe
+
 clean:
-	rm -f lod-selector
+	rm -f lod-selector decpipe

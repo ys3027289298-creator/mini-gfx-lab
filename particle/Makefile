@@ -9,5 +9,11 @@ particle-pool: src/particle.c
 test: particle-pool
 	./particle-pool
 
+decpipe: src/decpipe.c ../decodecache/src/dc_codec.c ../decodecache/src/dc_codec.h
+	$(CC) $(CFLAGS) -I../decodecache/src src/decpipe.c ../decodecache/src/dc_codec.c -o $@ -lm
+
+bench: decpipe
+	./decpipe
+
 clean:
-	rm -f particle-pool
+	rm -f particle-pool decpipe
