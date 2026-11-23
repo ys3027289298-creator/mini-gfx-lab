@@ -12,3 +12,4 @@
 | `mixer/` | 总线混音、侧链闪避、软限幅 |
 | `fontatlas/` | 字形货架装箱与字距调整 |
 | `tween/` | 关键帧时间线与缓动 |
+| `avsync/` | 音视频帧对齐：帧时刻、逐帧偏差（配 mini-audio-lab `avsync/`） |
