@@ -1,0 +1,3 @@
+module=particle
+point=output_overflow
+code=DIAG_E_CAPACITY

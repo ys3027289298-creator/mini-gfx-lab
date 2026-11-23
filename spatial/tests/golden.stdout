@@ -1,0 +1,4 @@
+right_source peakL=0 peakR=93 (impulse@64)
+left_source peakL=35 peakR=0 (impulse@64)
+attenuation near=0.3536 far=0.0707 ratio=0.200
+mix_peak=0.9784 (soft clip 上限 1.0)

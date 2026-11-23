@@ -1,0 +1,13 @@
+single_mask=1
+middle_mask=1
+end_mask=1
+isolated_mask=1
+empty_variant=1
+filled_variant=1
+cull_all=1
+cull_sub=1
+cull_narrow=1
+cull_hidden_layer=1
+out_of_range_set=1
+bad_layer=1
+all_ok=1

@@ -1,0 +1,3 @@
+module=tilemap
+point=autotile_bad_layer
+code=DIAG_E_INVALID_ARG

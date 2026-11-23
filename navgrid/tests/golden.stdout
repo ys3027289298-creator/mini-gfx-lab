@@ -1,0 +1,4 @@
+raw=12 len=11.4142 smooth=6 len=11.2361
+(0,0) (3,0) (4,2) (7,2) (7,4) (8,4)
+bad_segments=0
+corner_cut=1

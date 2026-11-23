@@ -1,0 +1,3 @@
+module=particle
+point=emitter_capacity
+code=DIAG_E_CAPACITY

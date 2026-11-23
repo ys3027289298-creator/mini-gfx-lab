@@ -1,0 +1,3 @@
+module=spatial
+point=nonfinite_sample
+code=DIAG_E_INVALID_ARG

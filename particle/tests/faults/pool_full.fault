@@ -1,0 +1,3 @@
+module=particle
+point=pool_full
+code=DIAG_E_CAPACITY

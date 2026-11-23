@@ -1,0 +1,3 @@
+module=navgrid
+point=astar_alloc_failed
+code=DIAG_E_NOMEM

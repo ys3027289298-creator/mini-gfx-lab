@@ -1,0 +1,3 @@
+module=navgrid
+point=grid_load_empty
+code=DIAG_E_INVALID_ARG

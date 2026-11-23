@@ -1,0 +1,3 @@
+module=particle
+point=invalid_priority
+code=DIAG_E_INVALID_ARG

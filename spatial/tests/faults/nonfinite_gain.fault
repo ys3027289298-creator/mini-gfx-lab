@@ -1,0 +1,3 @@
+module=spatial
+point=nonfinite_gain
+code=DIAG_E_INVALID_ARG

@@ -1,0 +1,3 @@
+module=tilemap
+point=cull_invalid_rect
+code=DIAG_E_INVALID_ARG

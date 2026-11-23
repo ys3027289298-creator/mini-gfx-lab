@@ -1,0 +1,7 @@
+# build outputs
+particle/particle-pool
+tilemap/tilemap
+navgrid/mini-navgrid
+spatial/mini-spatial
+chain/render-chain
+*/tests/*_tests

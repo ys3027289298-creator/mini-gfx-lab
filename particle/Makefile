@@ -1,13 +1,9 @@
 CC ?= gcc
 CFLAGS ?= -O2 -std=c11 -Wall -Wextra
 
-all: particle-pool
+NAME    := particle-pool
+MODULE  := particle
+SRC     := src/particle.c
+HDRS    := src/particle.h
 
-particle-pool: src/particle.c
-	$(CC) $(CFLAGS) $< -o $@ -lm
-
-test: particle-pool
-	./particle-pool
-
-clean:
-	rm -f particle-pool
+include ../common/rules.mk

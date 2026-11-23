@@ -1,0 +1,3 @@
+module=tilemap
+point=map_set_out_of_range
+code=DIAG_E_OUT_OF_RANGE

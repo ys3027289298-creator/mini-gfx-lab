@@ -1,0 +1,3 @@
+module=tilemap
+point=selftest_failed
+code=DIAG_E_INVARIANT

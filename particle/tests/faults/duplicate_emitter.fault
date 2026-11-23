@@ -1,0 +1,3 @@
+module=particle
+point=duplicate_emitter
+code=DIAG_E_INVALID_ARG

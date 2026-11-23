@@ -1,0 +1,3 @@
+module=spatial
+point=clip_violation
+code=DIAG_E_INVARIANT

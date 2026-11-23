@@ -1,0 +1,3 @@
+module=spatial
+point=bad_frame_count
+code=DIAG_E_INVALID_ARG

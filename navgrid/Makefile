@@ -1,13 +1,9 @@
 CC ?= gcc
 CFLAGS ?= -O2 -std=c11 -Wall -Wextra
 
-all: mini-navgrid
+NAME    := mini-navgrid
+MODULE  := navgrid
+SRC     := src/navgrid.c
+HDRS    := src/navgrid.h
 
-mini-navgrid: src/navgrid.c
-	$(CC) $(CFLAGS) $< -o $@ -lm
-
-test: mini-navgrid
-	./mini-navgrid
-
-clean:
-	rm -f mini-navgrid
+include ../common/rules.mk
