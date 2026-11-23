@@ -9,5 +9,11 @@ fontatlas: src/fontatlas.c
 test: fontatlas
 	./fontatlas
 
+imgpipe: src/imgpipe.c ../imgbuf/src/imgbuf.c ../imgbuf/src/imgbuf.h
+	$(CC) $(CFLAGS) -I../imgbuf/src src/imgpipe.c ../imgbuf/src/imgbuf.c -o $@ -lm
+
+bench: imgpipe
+	./imgpipe
+
 clean:
-	rm -f fontatlas
+	rm -f fontatlas imgpipe

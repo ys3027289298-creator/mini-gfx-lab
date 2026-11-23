@@ -12,3 +12,6 @@
 | `mixer/` | 总线混音、侧链闪避、软限幅 |
 | `fontatlas/` | 字形货架装箱与字距调整 |
 | `tween/` | 关键帧时间线与缓动 |
+| `imgbuf/` | 共享图像缓冲：引用计数、零拷贝共享、拷贝与峰值记账 |
+
+`imgbuf` 已接入 `tilemap`、`fontatlas`、`particle`、`lod` 四处图像管线；根目录 `make bench` 汇总四处的峰值内存与耗时数据，缺任一处即失败。

@@ -9,5 +9,11 @@ particle-pool: src/particle.c
 test: particle-pool
 	./particle-pool
 
+imgpipe: src/imgpipe.c ../imgbuf/src/imgbuf.c ../imgbuf/src/imgbuf.h
+	$(CC) $(CFLAGS) -I../imgbuf/src src/imgpipe.c ../imgbuf/src/imgbuf.c -o $@ -lm
+
+bench: imgpipe
+	./imgpipe
+
 clean:
-	rm -f particle-pool
+	rm -f particle-pool imgpipe

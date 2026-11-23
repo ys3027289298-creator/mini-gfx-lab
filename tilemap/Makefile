@@ -9,5 +9,11 @@ tilemap: src/tilemap.c
 test: tilemap
 	./tilemap
 
+imgpipe: src/imgpipe.c ../imgbuf/src/imgbuf.c ../imgbuf/src/imgbuf.h
+	$(CC) $(CFLAGS) -I../imgbuf/src src/imgpipe.c ../imgbuf/src/imgbuf.c -o $@ -lm
+
+bench: imgpipe
+	./imgpipe
+
 clean:
-	rm -f tilemap
+	rm -f tilemap imgpipe
