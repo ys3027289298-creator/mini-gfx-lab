@@ -2,6 +2,7 @@
 /* tilemap: layered tile map with 4-neighbour autotiling and per-layer culling. */
 #include <stdio.h>
 #include <string.h>
+#include "diag.h"
 
 #define W 32
 #define H 32
@@ -56,12 +57,40 @@ static int cull_count(const TileMap* m, int x0, int y0, int x1, int y1) {
 }
 
 static int failures = 0;
+static Diag g_diag;
+
+#if DIAG
+/* evidence material for the run log: one record per check */
+#define LOG_CAP 16
+static const char* log_names[LOG_CAP];
+static int log_ok[LOG_CAP];
+static int log_n;
+
+static void log_record(const char* name, int ok) {
+    if (log_n < LOG_CAP) { log_names[log_n] = name; log_ok[log_n] = ok; log_n++; }
+}
+
+static void emit_run_log(void) {
+    fprintf(stderr, "[tilemap] run log (%d checks):\n", log_n);
+    for (int i = 0; i < log_n; i++)
+        fprintf(stderr, "[tilemap] %02d %-20s %s\n", i, log_names[i], log_ok[i] ? "ok" : "FAIL");
+    fprintf(stderr, "[tilemap] summary: %d/%d failed\n", g_diag.failed, g_diag.checks);
+}
+#endif
+
 static void check(const char* name, int ok) {
+#if DIAG
+    diag_check(&g_diag, ok);
+    log_record(name, ok);
+    DIAG_DRAW("%s=%d\n", name, ok ? 1 : 0);
+#else
     printf("%s=%d\n", name, ok ? 1 : 0);
+#endif
     if (!ok) failures++;
 }
 
 int main(void) {
+    diag_begin(&g_diag, "tilemap");
     TileMap m;
     map_init(&m);
     for (int x = 5; x < 10; x++) map_set(&m, 0, x, 5, 1);
@@ -85,6 +114,16 @@ int main(void) {
     check("out_of_range_set", (map_set(&m, 0, -1, 0, 1), map_get(&m, 0, -1, 0)) == 0);
     check("bad_layer", map_get(&m, 9, 0, 0) == 0);
 
+#if DIAG
+    diag_check(&g_diag, !diag_forced(&g_diag));
+    log_record("no_injected_fault", !g_diag.forced);
+    DIAG_DRAW("all_ok=%d\n", failures == 0);
+    if (diag_ok(&g_diag)) { diag_draw_flush(); return 0; }
+    diag_drop_notice(&g_diag);
+    emit_run_log();
+    return DIAG_EXIT_DROP;
+#else
     printf("all_ok=%d\n", failures == 0);
     return failures == 0 ? 0 : 1;
+#endif
 }

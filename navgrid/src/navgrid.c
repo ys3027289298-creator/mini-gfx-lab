@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "diag.h"
 
 #define MAX_W 64
 #define MAX_H 64
@@ -140,6 +141,27 @@ static double path_length(const Pt* p, int n) {
     return s;
 }
 
+#if DIAG
+/* evidence: FNV-1a 64 over the produced artifact (no allocation) */
+static unsigned long long fnv1a64(const void* data, size_t len) {
+    const unsigned char* p = (const unsigned char*)data;
+    unsigned long long h = 1469598103934665603ULL;
+    for (size_t i = 0; i < len; i++) { h ^= p[i]; h *= 1099511628211ULL; }
+    return h;
+}
+
+static void emit_artifact_hash(const Grid* g, const Pt* raw, int n, const Pt* sm, int m) {
+    fprintf(stderr, "[navgrid] artifact: smoothed path, %d waypoints (raw %d), grid %dx%d\n",
+            m, n, g->w, g->h);
+    fprintf(stderr, "[navgrid] path_fnv1a64=%016llx\n",
+            m > 0 ? fnv1a64(sm, sizeof(Pt) * (size_t)m) : 0ULL);
+    fprintf(stderr, "[navgrid] raw_fnv1a64=%016llx\n",
+            n > 0 ? fnv1a64(raw, sizeof(Pt) * (size_t)n) : 0ULL);
+    fprintf(stderr, "[navgrid] grid_fnv1a64=%016llx\n",
+            fnv1a64(g->blocked, sizeof(g->blocked)));
+}
+#endif
+
 int main(void) {
     const char* rows[] = {
         "S....#....",
@@ -150,16 +172,34 @@ int main(void) {
     };
     Grid g;
     if (grid_load(&g, rows, 5) != 0) { printf("load fail\n"); return 1; }
+    Diag d; diag_begin(&d, "navgrid");
     Pt s = {0,0}, t = {8,4};
     Pt raw[MAX_NODES], sm[MAX_NODES];
     int n = astar(&g, s, t, raw, MAX_NODES);
     if (n < 0) { printf("no path\n"); return 1; }
     int m = smooth(&g, raw, n, sm, MAX_NODES);
-    printf("raw=%d len=%.4f smooth=%d len=%.4f\n", n, path_length(raw,n), m, path_length(sm,m));
-    for (int i = 0; i < m; i++) printf("(%d,%d)%s", sm[i].x, sm[i].y, i+1==m ? "\n" : " ");
     int bad = 0;
     for (int i = 1; i < m; i++) if (!line_of_sight(&g, sm[i-1], sm[i])) bad++;
-    printf("bad_segments=%d\n", bad);
-    printf("corner_cut=%d\n", !step_ok(&g, (Pt){1,0}, (Pt){2,1}));
+    int corner_cut = !step_ok(&g, (Pt){1,0}, (Pt){2,1});
+
+    /* acceptance: path exists, smooths, stays in line-of-sight, no corner cuts */
+    diag_check(&d, m > 0);
+    diag_check(&d, bad == 0);
+    diag_check(&d, corner_cut == 1);
+    diag_check(&d, m >= 2 && sm[0].x == s.x && sm[0].y == s.y &&
+                   sm[m-1].x == t.x && sm[m-1].y == t.y);
+    diag_check(&d, !diag_forced(&d));
+
+    DIAG_DRAW("raw=%d len=%.4f smooth=%d len=%.4f\n", n, path_length(raw,n), m, path_length(sm,m));
+    for (int i = 0; i < m; i++) DIAG_DRAW("(%d,%d)%s", sm[i].x, sm[i].y, i+1==m ? "\n" : " ");
+    DIAG_DRAW("bad_segments=%d\n", bad);
+    DIAG_DRAW("corner_cut=%d\n", corner_cut);
+#if DIAG
+    if (diag_ok(&d)) { diag_draw_flush(); return 0; }
+    diag_drop_notice(&d);
+    emit_artifact_hash(&g, raw, n, sm, m);
+    return DIAG_EXIT_DROP;
+#else
     return 0;
+#endif
 }

@@ -2,6 +2,7 @@
 /* fontatlas: shelf packing of glyph bitmaps into a fixed atlas, plus kerning. */
 #include <stdio.h>
 #include <string.h>
+#include "diag.h"
 
 #define ATLAS_W 256
 #define ATLAS_H 256
@@ -74,12 +75,40 @@ static int kerning_apply(const KernPair* pairs, int n, const char* text) {
 }
 
 static int failures = 0;
+static Diag g_diag;
+
+#if DIAG
+/* evidence material: names of the failed checks, for the repro context */
+#define FAIL_CAP 16
+static const char* fail_names[FAIL_CAP];
+static int fail_n;
+
+static void emit_repro_command(void) {
+    int i;
+    fprintf(stderr, "[fontatlas] failed checks:");
+    for (i = 0; i < fail_n; i++) fprintf(stderr, " %s", fail_names[i]);
+    fprintf(stderr, "\n");
+    fprintf(stderr, "[fontatlas] repro (copy & paste from the repo root):\n");
+    if (g_diag.forced)
+        fprintf(stderr, "  make -C fontatlas diag-test MINI_GFX_FAULT=fontatlas\n");
+    else
+        fprintf(stderr, "  make -C fontatlas diag-test\n");
+}
+#endif
+
 static void check(const char* name, int ok) {
+#if DIAG
+    diag_check(&g_diag, ok);
+    if (!ok && fail_n < FAIL_CAP) fail_names[fail_n++] = name;
+    DIAG_DRAW("%s=%d\n", name, ok ? 1 : 0);
+#else
     printf("%s=%d\n", name, ok ? 1 : 0);
+#endif
     if (!ok) failures++;
 }
 
 int main(void) {
+    diag_begin(&g_diag, "fontatlas");
     Atlas a;
     atlas_init(&a);
     int idx = -1;
@@ -112,6 +141,16 @@ int main(void) {
     check("kern_To", kerning_apply(pairs, 2, "To") == 1);
     check("kern_plain", kerning_apply(pairs, 2, "AB") == 2);
 
+#if DIAG
+    diag_check(&g_diag, !diag_forced(&g_diag));
+    if (g_diag.forced && fail_n < FAIL_CAP) fail_names[fail_n++] = "no_injected_fault";
+    DIAG_DRAW("all_ok=%d\n", failures == 0);
+    if (diag_ok(&g_diag)) { diag_draw_flush(); return 0; }
+    diag_drop_notice(&g_diag);
+    emit_repro_command();
+    return DIAG_EXIT_DROP;
+#else
     printf("all_ok=%d\n", failures == 0);
     return failures == 0 ? 0 : 1;
+#endif
 }

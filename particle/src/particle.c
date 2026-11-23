@@ -3,6 +3,9 @@
    and emitter priority scheduling. */
 #include <stdio.h>
 #include <string.h>
+#include "diag.h"
+
+#define FRAMES 10
 
 #define MAX_PARTICLES 4096
 #define MAX_EMITTERS 8
@@ -16,6 +19,21 @@ typedef struct {
     Emitter emitters[MAX_EMITTERS];
     int emitter_count;
 } World;
+
+#if DIAG
+/* evidence material for the numeric table, captured during the run */
+static int tbl_spawned[FRAMES], tbl_alive[FRAMES], tbl_hw[FRAMES];
+
+static void emit_numeric_table(const Diag* d, int tag1, int tag2, int tag3, const World* w) {
+    fprintf(stderr, "[particle] numeric evidence (per-frame):\n");
+    fprintf(stderr, "  frame  spawned  alive  high_water\n");
+    for (int i = 0; i < FRAMES; i++)
+        fprintf(stderr, "  %5d  %7d  %5d  %10d\n", i, tbl_spawned[i], tbl_alive[i], tbl_hw[i]);
+    fprintf(stderr, "[particle] final: alive=%d high_water=%d by_emitter=%d,%d,%d\n",
+            w->alive_count, w->high_water, tag1, tag2, tag3);
+    fprintf(stderr, "[particle] checks failed: %d/%d\n", d->failed, d->checks);
+}
+#endif
 
 static void world_init(World* w) {
     memset(w, 0, sizeof(*w));
@@ -77,21 +95,43 @@ static void update(World* w, float dt) {
 }
 
 int main(void) {
+    Diag d; diag_begin(&d, "particle");
     World w; world_init(&w);
     emitter_add(&w, 1, 40, 2);
     emitter_add(&w, 2, 30, 9);
     emitter_add(&w, 3, 20, 5);
-    for (int frame = 0; frame < 10; frame++) {
+    for (int frame = 0; frame < FRAMES; frame++) {
         spawn_frame(&w, 50);
+#if DIAG
+        int sp = 0;
+        for (int i = 0; i < w.emitter_count; i++) sp += w.emitters[i].spawned;
+#endif
         update(&w, 0.1f);
+#if DIAG
+        tbl_spawned[frame] = sp; tbl_alive[frame] = w.alive_count; tbl_hw[frame] = w.high_water;
+#endif
     }
-    printf("alive=%d high_water=%d\n", w.alive_count, w.high_water);
     int tag1 = 0, tag2 = 0, tag3 = 0;
     for (int i = 0; i < MAX_PARTICLES; i++) if (w.pool[i].alive) {
         if (w.pool[i].tag == 1) tag1++; else if (w.pool[i].tag == 2) tag2++; else tag3++;
     }
-    printf("by_emitter=%d,%d,%d\n", tag1, tag2, tag3);
+    /* acceptance: golden values from the reference run */
+    diag_check(&d, w.alive_count == 500);
+    diag_check(&d, w.high_water == 500);
+    diag_check(&d, tag1 == 0 && tag2 == 300 && tag3 == 200);
     /* quota 优先：高优先级 2 应先拿满 30 */
-    printf("priority_respected=%d\n", tag2 >= tag3 && tag3 >= 0);
+    diag_check(&d, tag2 >= tag3);
+    diag_check(&d, !diag_forced(&d));
+
+    DIAG_DRAW("alive=%d high_water=%d\n", w.alive_count, w.high_water);
+    DIAG_DRAW("by_emitter=%d,%d,%d\n", tag1, tag2, tag3);
+    DIAG_DRAW("priority_respected=%d\n", tag2 >= tag3 && tag3 >= 0);
+#if DIAG
+    if (diag_ok(&d)) { diag_draw_flush(); return 0; }
+    diag_drop_notice(&d);
+    emit_numeric_table(&d, tag1, tag2, tag3, &w);
+    return DIAG_EXIT_DROP;
+#else
     return 0;
+#endif
 }
