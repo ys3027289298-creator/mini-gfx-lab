@@ -1,0 +1,25 @@
+mode=noshare
+input_bytes=1228800
+copylog: copy consumer=memtable bytes=1228800
+copylog: copy consumer=copylog bytes=1228800
+copylog: copy consumer=pixelhash bytes=1228800
+copylog: copy consumer=repro bytes=1228800
+consumer.memtable.hash=3f8d3ea9a1552f64
+consumer.copylog.hash=3f8d3ea9a1552f64
+consumer.pixelhash.hash=3f8d3ea9a1552f64
+consumer.repro.hash=3f8d3ea9a1552f64
+input_hash=3f8d3ea9a1552f64
+all_consumer_hashes_equal=1
+all_hashes_match_input=1
+copylog:
+  copies=4 shares=0
+copies=4
+shares=0
+memtable:
+  mode=noshare input_bytes=1228800 peak_bytes=6144400 ratio=5.0003 limit=2.0000 ok=0
+peak_bytes=6144400
+peak_ratio=5.000326
+peak_limit=2.000000
+peak_ok=0
+repro=./imgshare-demo --noshare
+all_ok=1

@@ -1,0 +1,21 @@
+mode=share
+input_bytes=1228800
+consumer.memtable.hash=3f8d3ea9a1552f64
+consumer.copylog.hash=3f8d3ea9a1552f64
+consumer.pixelhash.hash=3f8d3ea9a1552f64
+consumer.repro.hash=3f8d3ea9a1552f64
+input_hash=3f8d3ea9a1552f64
+all_consumer_hashes_equal=1
+all_hashes_match_input=1
+copylog:
+  copies=0 shares=4
+copies=0
+shares=4
+memtable:
+  mode=share input_bytes=1228800 peak_bytes=1228880 ratio=1.0001 limit=2.0000 ok=1
+peak_bytes=1228880
+peak_ratio=1.000065
+peak_limit=2.000000
+peak_ok=1
+repro=./imgshare-demo --share
+all_ok=1
