@@ -1,0 +1,4 @@
+# 波形摘要（float32 小端，48000 Hz，57600 帧 = 1.200s）
+mode=off frames=57600 peak=1.001006 peak_pos=27840 rms=0.197681 fnv1a64=ae95f32f8610dacf
+mode=on  frames=57600 peak=1.000000 peak_pos=0 rms=0.200565 fnv1a64=906890a5411da2e4
+note: mode=off 与修复前现状逐字节相同（黄金哈希 ae95f32f8610dacf）
