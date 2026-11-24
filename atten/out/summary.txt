@@ -1,0 +1,10 @@
+viewport_w_px=3840
+viewport_h_px=2160
+px_per_m=30.000000
+R_m=73.430239003
+d0_m=42.394968255
+cross_m=19.920628577
+cross_gain=0.819142369
+five_pct_m=30.456664544
+near_limit_m=20.000000
+near_max_err_pct=0.351999861
