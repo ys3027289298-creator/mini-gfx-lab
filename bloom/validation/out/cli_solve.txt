@@ -1,0 +1,1 @@
+t0=213.602325 eps=2.0000 achieved_max_elev=1.999999 samples=10

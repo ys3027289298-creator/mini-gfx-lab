@@ -1,0 +1,4 @@
+bloom
+validation/scripts/validate
+validation/out/*.pgm
+validation/out/*.png
