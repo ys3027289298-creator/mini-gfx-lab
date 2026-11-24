@@ -1,8 +1,13 @@
 
 /* particle-pool: fixed-capacity particle pool with per-frame spawn budget
-   and emitter priority scheduling. */
+   and emitter priority scheduling.
+
+   Failure encoding: all failure points report through gfault block 0x10
+   (particle) and return the negative of the code; the success path is
+   byte-for-byte the original logic. */
 #include <stdio.h>
 #include <string.h>
+#include "../../gfault/include/gfault.h"
 
 #define MAX_PARTICLES 4096
 #define MAX_EMITTERS 8
@@ -23,7 +28,14 @@ static void world_init(World* w) {
 }
 
 static int emitter_add(World* w, int id, int quota, int priority) {
-    if (w->emitter_count >= MAX_EMITTERS) return -1;
+    if (w == NULL || quota < 0) {
+        gfault_report(GFAULT_SEG_PARTICLE, GFAULT_P_BAD_ARG, __LINE__);
+        return gfault_wrap(GFAULT_P_BAD_ARG);
+    }
+    if (w->emitter_count >= MAX_EMITTERS) {
+        gfault_report(GFAULT_SEG_PARTICLE, GFAULT_P_EMITTER_FULL, __LINE__);
+        return gfault_wrap(GFAULT_P_EMITTER_FULL);
+    }
     Emitter* e = &w->emitters[w->emitter_count++];
     e->id = id; e->quota = quota; e->spawned = 0; e->priority = priority;
     return e->id;
@@ -31,7 +43,8 @@ static int emitter_add(World* w, int id, int quota, int priority) {
 
 static int pool_find_free(World* w) {
     for (int i = 0; i < MAX_PARTICLES; i++) if (!w->pool[i].alive) return i;
-    return -1;
+    gfault_report(GFAULT_SEG_PARTICLE, GFAULT_P_POOL_EXHAUSTED, __LINE__);
+    return gfault_wrap(GFAULT_P_POOL_EXHAUSTED);
 }
 
 static int spawn_one(World* w, int emitter_id) {

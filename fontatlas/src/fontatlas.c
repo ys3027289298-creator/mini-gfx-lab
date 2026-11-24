@@ -1,7 +1,12 @@
 
-/* fontatlas: shelf packing of glyph bitmaps into a fixed atlas, plus kerning. */
+/* fontatlas: shelf packing of glyph bitmaps into a fixed atlas, plus kerning.
+
+   Failure encoding: packing rejections report through gfault block 0x40
+   (fontatlas) and keep returning -1-compatible negatives; shelf math and
+   the success path are unchanged. */
 #include <stdio.h>
 #include <string.h>
+#include "../../gfault/include/gfault.h"
 
 #define ATLAS_W 256
 #define ATLAS_H 256
@@ -26,14 +31,23 @@ static void atlas_init(Atlas* a) {
 
 /* shelf packing: place to the right on the same shelf, or open a new shelf */
 static int atlas_add(Atlas* a, GlyphSize g, int* out_index) {
-    if (a->count >= MAX_GLYPHS) return -1;
-    if (g.w <= 0 || g.h <= 0 || g.w > ATLAS_W || g.h > ATLAS_H) return -1;
+    if (a->count >= MAX_GLYPHS) {
+        gfault_report(GFAULT_SEG_FONT, GFAULT_F_GLYPH_TABLE, __LINE__);
+        return gfault_wrap(GFAULT_F_GLYPH_TABLE);
+    }
+    if (g.w <= 0 || g.h <= 0 || g.w > ATLAS_W || g.h > ATLAS_H) {
+        gfault_report(GFAULT_SEG_FONT, GFAULT_F_GLYPH_REJECTED, __LINE__);
+        return gfault_wrap(GFAULT_F_GLYPH_REJECTED);
+    }
     if (a->shelf_x + g.w > ATLAS_W) {
         a->used_h += a->shelf_h;
         a->shelf_x = 0;
         a->shelf_h = 0;
     }
-    if (a->used_h + g.h > ATLAS_H) return -1;
+    if (a->used_h + g.h > ATLAS_H) {
+        gfault_report(GFAULT_SEG_FONT, GFAULT_F_ATLAS_FULL, __LINE__);
+        return gfault_wrap(GFAULT_F_ATLAS_FULL);
+    }
 
     GlyphRect* r = &a->rects[a->count];
     r->x = a->shelf_x;
@@ -98,13 +112,13 @@ int main(void) {
     atlas_init(&full);
     int rc = 0, n = 0;
     while ((rc = atlas_add(&full, (GlyphSize){64, 64}, NULL)) == 0) { if (++n > MAX_GLYPHS) break; }
-    check("atlas_fills_then_fails", rc == -1 && n > 0);
+    check("atlas_fills_then_fails", rc < 0 && n > 0);
     check("full_no_overlap", atlas_overlap(&full) == 0);
 
     Atlas bad;
     atlas_init(&bad);
-    check("reject_zero", atlas_add(&bad, (GlyphSize){0, 10}, NULL) == -1);
-    check("reject_huge", atlas_add(&bad, (GlyphSize){ATLAS_W + 1, 10}, NULL) == -1);
+    check("reject_zero", atlas_add(&bad, (GlyphSize){0, 10}, NULL) < 0);
+    check("reject_huge", atlas_add(&bad, (GlyphSize){ATLAS_W + 1, 10}, NULL) < 0);
 
     KernPair pairs[] = { {'A', 'V', -1}, {'T', 'o', -1} };
     check("kern_no_pairs", kerning_apply(pairs, 2, "A") == 1);

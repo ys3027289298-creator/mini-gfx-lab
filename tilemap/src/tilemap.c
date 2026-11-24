@@ -1,7 +1,13 @@
 
-/* tilemap: layered tile map with 4-neighbour autotiling and per-layer culling. */
+/* tilemap: layered tile map with 4-neighbour autotiling and per-layer culling.
+
+   Failure encoding: invalid geometry/layers report through gfault block
+   0x20 (tilemap). map_get keeps its original 0-on-bad-input contract so
+   autotiling math is unchanged; map_set now reports instead of silently
+   ignoring out-of-range writes. The success path is the original logic. */
 #include <stdio.h>
 #include <string.h>
+#include "../../gfault/include/gfault.h"
 
 #define W 32
 #define H 32
@@ -17,13 +23,27 @@ static void map_init(TileMap* m) {
     for (int l = 0; l < LAYERS; l++) m->layer_visible[l] = 1;
 }
 
-static void map_set(TileMap* m, int layer, int x, int y, unsigned char id) {
-    if (layer < 0 || layer >= LAYERS || x < 0 || x >= W || y < 0 || y >= H) return;
+static int map_set(TileMap* m, int layer, int x, int y, unsigned char id) {
+    if (layer < 0 || layer >= LAYERS) {
+        gfault_report(GFAULT_SEG_TILEMAP, GFAULT_T_BAD_LAYER, __LINE__);
+        return gfault_wrap(GFAULT_T_BAD_LAYER);
+    }
+    if (x < 0 || x >= W || y < 0 || y >= H) {
+        gfault_report(GFAULT_SEG_TILEMAP, GFAULT_T_OUT_OF_RANGE, __LINE__);
+        return gfault_wrap(GFAULT_T_OUT_OF_RANGE);
+    }
+    /* id == 0 keeps its original meaning: clear the cell. GFAULT_T_BAD_TILE
+       stays reserved for a future tile-id validation hook. */
     m->base[layer][y][x] = id;
+    return 0;
 }
 
 static unsigned char map_get(const TileMap* m, int layer, int x, int y) {
-    if (layer < 0 || layer >= LAYERS || x < 0 || x >= W || y < 0 || y >= H) return 0;
+    /* Read-side out-of-range is a benign query used by autotile border
+       logic, not a render failure: keep the original 0-sentinel contract.
+       Hard failures are reported on the write side (map_set). */
+    if (layer < 0 || layer >= LAYERS || x < 0 || x >= W || y < 0 || y >= H)
+        return 0;
     return m->base[layer][y][x];
 }
 

@@ -1,10 +1,15 @@
 
 /* mini-navgrid: 8-direction A* on an ASCII grid, with corner-cut prevention,
-   path smoothing by line-of-sight, and incremental re-planning. */
+   path smoothing by line-of-sight, and incremental re-planning.
+
+   Failure encoding: search/load/scratch failures report through gfault
+   block 0x30 (navgrid) and keep returning negative values; the algorithm
+   and its success-path output are unchanged. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "../../gfault/include/gfault.h"
 
 #define MAX_W 64
 #define MAX_H 64
@@ -16,10 +21,16 @@ typedef struct { int x, y; } Pt;
 
 static int grid_load(Grid* g, const char* const* rows, int h) {
     int w = (int)strlen(rows[0]);
-    if (w <= 0 || w > MAX_W || h <= 0 || h > MAX_H) return -1;
+    if (w <= 0 || w > MAX_W || h <= 0 || h > MAX_H) {
+        gfault_report(GFAULT_SEG_NAVGRID, GFAULT_N_BAD_GRID, __LINE__);
+        return gfault_wrap(GFAULT_N_BAD_GRID);
+    }
     g->w = w; g->h = h;
     for (int y = 0; y < h; y++) {
-        if ((int)strlen(rows[y]) != w) return -1;
+        if ((int)strlen(rows[y]) != w) {
+            gfault_report(GFAULT_SEG_NAVGRID, GFAULT_N_BAD_GRID, __LINE__);
+            return gfault_wrap(GFAULT_N_BAD_GRID);
+        }
         for (int x = 0; x < w; x++) g->blocked[y][x] = (rows[y][x] == '#');
     }
     return 0;
@@ -48,10 +59,21 @@ static const int DIRS[8][2] = {{1,0},{-1,0},{0,1},{0,-1},{1,1},{1,-1},{-1,1},{-1
 typedef struct { double g, f; int parent; unsigned char open, closed; } Node;
 
 static int astar(const Grid* g, Pt s, Pt t, Pt* out, int max_out) {
-    if (!walkable(g, s.x, s.y) || !walkable(g, t.x, t.y)) return -1;
+    if (!walkable(g, s.x, s.y) || !walkable(g, t.x, t.y)) {
+        gfault_report(GFAULT_SEG_NAVGRID, GFAULT_N_UNWALKABLE, __LINE__);
+        return gfault_wrap(GFAULT_N_UNWALKABLE);
+    }
     Node* nodes = (Node*)calloc((size_t)g->w * g->h, sizeof(Node));
-    if (!nodes) return -1;
+    if (!nodes) {
+        gfault_report(GFAULT_SEG_NAVGRID, GFAULT_N_ALLOC, __LINE__);
+        return gfault_wrap(GFAULT_N_ALLOC);
+    }
     int* heap = (int*)malloc(sizeof(int) * (size_t)g->w * g->h);
+    if (!heap) {
+        free(nodes);
+        gfault_report(GFAULT_SEG_NAVGRID, GFAULT_N_ALLOC, __LINE__);
+        return gfault_wrap(GFAULT_N_ALLOC);
+    }
     int hn = 0;
     int si = s.y * g->w + s.x, ti = t.y * g->w + t.x;
     nodes[si].g = 0.0;
@@ -96,6 +118,9 @@ static int astar(const Grid* g, Pt s, Pt t, Pt* out, int max_out) {
             }
             rc = n;
         }
+    } else {
+        gfault_report(GFAULT_SEG_NAVGRID, GFAULT_N_NO_PATH, __LINE__);
+        rc = gfault_wrap(GFAULT_N_NO_PATH);
     }
     free(heap); free(nodes);
     return rc;
@@ -127,7 +152,10 @@ static int smooth(const Grid* g, const Pt* in, int n, Pt* out, int max_out) {
         for (int j = n - 1; j > anchor; j--) {
             if (line_of_sight(g, in[anchor], in[j])) { next = j; break; }
         }
-        if (m >= max_out) return -1;
+        if (m >= max_out) {
+            gfault_report(GFAULT_SEG_NAVGRID, GFAULT_N_SMOOTH_CAP, __LINE__);
+            return gfault_wrap(GFAULT_N_SMOOTH_CAP);
+        }
         out[m++] = in[next];
         anchor = next;
     }

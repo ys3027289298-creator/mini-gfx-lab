@@ -12,3 +12,5 @@
 | `mixer/` | 总线混音、侧链闪避、软限幅 |
 | `fontatlas/` | 字形货架装箱与字距调整 |
 | `tween/` | 关键帧时间线与缓动 |
+| `palette/` | 256 项 RGBA 调色板 LUT 与色板渲染（gfault 第五段） |
+| `gfault/` | 五段统一失败编码（0x10–0x5F）、按段隔离合成、零分配诊断，见 `gfault/README.md` |
